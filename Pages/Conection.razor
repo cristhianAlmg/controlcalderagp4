@@ -10,20 +10,26 @@
         <div class="row">
             <div class="col-12">
                 <div class="input-group mb-3">
-                    <span class="input-group-text" id="inputGroup-sizing-default">Server</span>
-                    <input @onkeypress="@validateForm" @bind="entry.Server" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    <span class="input-group-text" id="inputGroup-sizing-default">CLIENT ID</span>
+                    <input @bind="entry.MQTT_CLIENT_ID" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 </div>
             </div>
             <div class="col-12">
                 <div class="input-group mb-3">
-                    <span class="input-group-text" id="inputGroup-sizing-default">User</span>
-                    <input @onkeypress="@validateForm" @bind="entry.User" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    <span class="input-group-text" id="inputGroup-sizing-default">BROKER</span>
+                    <input @bind="entry.MQTT_BROKER" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 </div>
             </div>
             <div class="col-12">
                 <div class="input-group mb-3">
-                    <span class="input-group-text" id="inputGroup-sizing-default">Password</span>
-                    <input @onkeypress="@validateForm" @bind="entry.Password" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    <span class="input-group-text" id="inputGroup-sizing-default">USER</span>
+                    <input @bind="entry.MQTT_USER" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-sizing-default">PASSWORD</span>
+                    <input @bind="entry.MQTT_PASSWORD" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 </div>
             </div>
         </div>
@@ -36,28 +42,42 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            @if (conectedServer)
+            {
+                <div class="alert alert-success" role="alert"> Conected </div>
+            }
+            @if (!conectedServer)
+            {
+                <div class="alert alert-danger" role="alert"> Not Conected </div>
+            }
+        </div>
     </div>
 </div>
 
 @code {
     DataSet entry = new DataSet();
-    bool btnDisabled = true;
+    bool conectedServer = false;
 
     protected async void Connection()
     {
-
+        conectedServer = (conectedServer) ? false : true;
     }
 
+    /*
     private void validateForm()
     {
-        btnDisabled = (
-            (entry.User == String.Empty) ||
-            (String.IsNullOrWhiteSpace(entry.User)) ||
-            (entry.Password == String.Empty) ||
-            (String.IsNullOrWhiteSpace(entry.Password)) ||
-            (entry.Server == String.Empty) ||
-            (String.IsNullOrWhiteSpace(entry.Server)))           
+        conectedServer = (
+            (entry.MQTT_CLIENT_ID == String.Empty) ||
+            (String.IsNullOrWhiteSpace(entry.MQTT_CLIENT_ID)) ||
+            (entry.MQTT_BROKER == String.Empty) ||
+            (String.IsNullOrWhiteSpace(entry.MQTT_BROKER)) ||
+            (entry.MQTT_USER == String.Empty) ||
+            (String.IsNullOrWhiteSpace(entry.MQTT_USER)) ||
+            (entry.MQTT_PASSWORD == String.Empty) ||
+            (String.IsNullOrWhiteSpace(entry.MQTT_PASSWORD)))
             ? true : false;
     }
+    */
 
 }
