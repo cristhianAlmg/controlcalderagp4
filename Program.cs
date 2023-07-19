@@ -9,6 +9,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<GetService>();
 builder.Services.AddSingleton<SetService>();
+builder.Services.AddSingleton<MqttService>();
 
 var app = builder.Build();
 

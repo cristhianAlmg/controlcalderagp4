@@ -8,5 +8,6 @@
         public string MQTT_PASSWORD { get; set; }
         public string MQTT_TOPIC_PUB { get; set; }
         public string MQTT_TOPIC_SUB { get; set; }
+        public string MQTT_PORT { get; set; }
     }
 }

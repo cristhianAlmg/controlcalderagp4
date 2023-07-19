@@ -1,48 +1,63 @@
 ﻿@page "/"
-@page "/conection"
+@page "/dashboard"
 @using BlazorApp1.Data
 @inject BlazorApp1.Services.SetService setService
-
-<h3>Conection</h3>
+@inject BlazorApp1.Services.MqttService mqttService
+@inject BlazorApp1.Services.GetService getService
 
 <div class="container">
     <div class="container text-center">
         <div class="row">
             <div class="col-12">
-                <div class="input-group mb-3">
+                <div class="input-group mb-2">
                     <span class="input-group-text" id="inputGroup-sizing-default">CLIENT ID</span>
-                    <input @bind="entry.MQTT_CLIENT_ID" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    <input @bind="entrySet.MQTT_CLIENT_ID" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 </div>
             </div>
-            <div class="col-12">
-                <div class="input-group mb-3">
+            <div class="col-6">
+                <div class="input-group mb-2">
                     <span class="input-group-text" id="inputGroup-sizing-default">BROKER</span>
-                    <input @bind="entry.MQTT_BROKER" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    <input @bind="entrySet.MQTT_BROKER" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 </div>
             </div>
-            <div class="col-12">
-                <div class="input-group mb-3">
+            <div class="col-6">
+                <div class="input-group mb-2">
+                    <span class="input-group-text" id="inputGroup-sizing-default">PORT</span>
+                    <input @bind="entrySet.MQTT_PORT" type="number" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="input-group mb-2">
                     <span class="input-group-text" id="inputGroup-sizing-default">USER</span>
-                    <input @bind="entry.MQTT_USER" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    <input @bind="entrySet.MQTT_USER" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 </div>
             </div>
-            <div class="col-12">
-                <div class="input-group mb-3">
+            <div class="col-6">
+                <div class="input-group mb-2">
                     <span class="input-group-text" id="inputGroup-sizing-default">PASSWORD</span>
-                    <input @bind="entry.MQTT_PASSWORD" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    <input @bind="entrySet.MQTT_PASSWORD" type="password" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="input-group mb-2">
+                    <span class="input-group-text" id="inputGroup-sizing-default">TOPIC PUBLISH</span>
+                    <input @bind="entrySet.MQTT_TOPIC_PUB" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="input-group mb-2">
+                    <span class="input-group-text" id="inputGroup-sizing-default">TOPIC SUBSCRIBE</span>
+                    <input @bind="entrySet.MQTT_TOPIC_SUB" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="input-group mb-3">
-                    <button class="btn btn-primary" @onclick="@Connection">
-                        Conect
-                    </button>
-                </div>
+        <div class="row mb-2 mt-2">
+            <div class="btn-group" role="group" aria-label="Basic outlined example">
+                <button type="button" class="btn btn-outline-success" @onclick="@Connection">Connect</button>
+                <button type="button" class="btn btn-outline-danger" @onclick="@Disconnection">Disconnect</button>
             </div>
         </div>
-        <div class="row">
+        <div class="row mb-2 mt-2">
             @if (conectedServer)
             {
                 <div class="alert alert-success" role="alert"> Conected </div>
@@ -55,29 +70,96 @@
     </div>
 </div>
 
+@if (conectedServer)
+{
+    <div class="container">
+        <h4 class="mb-2 mt-2">Subscribe Info</h4>
+
+        <div class="container text-center">
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text" id="inputGroup-sizing-default">Temperature</span>
+                        <input @bind="entryGet.Temperature" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" disabled>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text" id="inputGroup-sizing-default">Last Update</span>
+                        <input @bind="entryGet.Time" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" disabled>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2 mt-2">
+                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                    <button type="button" class="btn btn-outline-success" @onclick="@Subscribe">Subscribe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h4 class="mb-2 mt-2">Publish Info</h4>
+
+        <div class="container text-center">
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text" id="inputGroup-sizing-default">Temperature</span>
+                        <input @bind="entryGet.Temperature" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text" id="inputGroup-sizing-default">Last Update</span>
+                        <input @bind="entryGet.Time" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2 mt-2">
+                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                    <button type="button" class="btn btn-outline-success" @onclick="@Publish">Publish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
 @code {
-    DataSet entry = new DataSet();
+
+    DataSet entrySet = new()
+    {
+        MQTT_CLIENT_ID = "grupo4",
+        MQTT_BROKER = "lrfia.uai.edu.ar",
+        MQTT_USER = "alumnos",
+        MQTT_PASSWORD = "",
+        MQTT_PORT = "8741",
+        MQTT_TOPIC_PUB = "grupo4/topic_sub",
+        MQTT_TOPIC_SUB = "grupo4/topic_pub"
+    };
+    DataGet entryGet = new DataGet();
+
     bool conectedServer = false;
 
-    protected async void Connection()
+    private async void Connection()
     {
-        conectedServer = (conectedServer) ? false : true;
+        conectedServer = await mqttService.Connect_Client(entrySet) ? true : false;
     }
 
-    /*
-    private void validateForm()
+    private async void Subscribe()
     {
-        conectedServer = (
-            (entry.MQTT_CLIENT_ID == String.Empty) ||
-            (String.IsNullOrWhiteSpace(entry.MQTT_CLIENT_ID)) ||
-            (entry.MQTT_BROKER == String.Empty) ||
-            (String.IsNullOrWhiteSpace(entry.MQTT_BROKER)) ||
-            (entry.MQTT_USER == String.Empty) ||
-            (String.IsNullOrWhiteSpace(entry.MQTT_USER)) ||
-            (entry.MQTT_PASSWORD == String.Empty) ||
-            (String.IsNullOrWhiteSpace(entry.MQTT_PASSWORD)))
-            ? true : false;
+        await mqttService.Subscribe_Topic(entrySet);
     }
-    */
+
+    private async void Publish()
+    {
+        await mqttService.Publish_Application_Message(entrySet, entryGet);
+    }
+
+    private async void Disconnection()
+    {
+        conectedServer = await mqttService.Clean_Disconnect(entrySet) ? false : true;
+    }
 
 }
