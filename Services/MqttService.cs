@@ -6,6 +6,9 @@ using MQTTnet.Server;
 using MQTTnet.Client.Options;
 using System.Text;
 using System.Data;
+using MQTTnet.Client.Publishing;
+using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace BlazorApp1.Services
 {
@@ -21,35 +24,35 @@ namespace BlazorApp1.Services
 
                 IMqttClient client = mqttFactory.CreateMqttClient();
 
-                var options = new MqttClientOptionsBuilder()
+                IMqttClientOptions options = new MqttClientOptionsBuilder()
                     .WithClientId(dataset.MQTT_CLIENT_ID)
-                    .WithTcpServer(dataset.MQTT_BROKER, Convert.ToInt32(dataset.MQTT_PORT))
+                    .WithTcpServer(dataset.MQTT_BROKER, dataset.MQTT_PORT)
                     .WithCredentials(dataset.MQTT_USER, dataset.MQTT_PASSWORD)
+                    .WithCleanSession()
                     .Build();
 
-                var topicFilter = new MqttTopicFilterBuilder().WithTopic(dataset.MQTT_TOPIC_SUB).Build();
-
-                await client.SubscribeAsync(topicFilter);
-
-                client.UseConnectedHandler(e =>
+                client.UseConnectedHandler(args =>
                 {
-                    Console.WriteLine("Connected to the broker successfully");
+                    var topicFilter = new MqttTopicFilterBuilder()
+                    .WithTopic(dataset.MQTT_TOPIC_SUB)
+                    .WithAtLeastOnceQoS()
+                    .Build();
+                    
+                    client.SubscribeAsync(topicFilter);                    
                 });
 
-                client.UseDisconnectedHandler(e =>
-                {
-                    Console.WriteLine("Disconnected from the broker successfull");
-                });
+                client.UseDisconnectedHandler(args => { });
 
-                client.UseApplicationMessageReceivedHandler(e =>
+                Console.WriteLine("Connected to the broker successfully");
+                client.UseApplicationMessageReceivedHandler(args =>
                 {
-                    dataGet.Temperature = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-                    Console.WriteLine($"Received Message - {Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
+                    dataGet.Temperature = Encoding.UTF8.GetString(args.ApplicationMessage.Payload);
+                    Console.WriteLine($"Received Message - {Encoding.UTF8.GetString(args.ApplicationMessage.Payload)}");
                 });
 
                 await client.ConnectAsync(options);
 
-                await client.DisconnectAsync();
+                //await client.DisconnectAsync();
 
                 return dataGet;
             }
@@ -60,7 +63,7 @@ namespace BlazorApp1.Services
             }
         }
 
-        public async Task<bool> Publish_Application_Message(DataSet dataset, DataGet dataget)
+        public async Task<bool> Publish_Application_Message(DataSet dataset, DataGet entryGet)
         {    
             try
             {
@@ -68,25 +71,23 @@ namespace BlazorApp1.Services
 
                 IMqttClient client = mqttFactory.CreateMqttClient();
 
-                var options = new MqttClientOptionsBuilder()
+                IMqttClientOptions options = new MqttClientOptionsBuilder()
                     .WithClientId(dataset.MQTT_CLIENT_ID)
-                    .WithTcpServer(dataset.MQTT_BROKER, Convert.ToInt32(dataset.MQTT_PORT))
+                    .WithTcpServer(dataset.MQTT_BROKER, dataset.MQTT_PORT)
                     .WithCredentials(dataset.MQTT_USER, dataset.MQTT_PASSWORD)
+                    .WithCleanSession()
                     .Build();
 
-                client.UseConnectedHandler(e =>
-                {
-                    Console.WriteLine("Connected to the broker successfully");
-                });
+                client.UseConnectedHandler(args => { });
 
-                client.UseDisconnectedHandler(e =>
-                {
-                    Console.WriteLine("Disconnected from the broker successfull");
-                });
+                client.UseDisconnectedHandler(args => { });
 
                 await client.ConnectAsync(options);
 
-                await PublishMessageAsync(client, dataset, dataget);
+                if (entryGet.Temperature != null && entryGet.Temperature != "0")
+                {
+                    await PublishMessageAsync(client, dataset, entryGet);
+                }
 
                 await client.DisconnectAsync();
 
@@ -99,13 +100,19 @@ namespace BlazorApp1.Services
             }
         }
 
-        private static async Task PublishMessageAsync(IMqttClient client, DataSet dataset, DataGet dataget)
+        private static async Task PublishMessageAsync(IMqttClient client, DataSet dataset, DataGet entryGet)
         {
             try
             {
+                string objectSerialized = JsonConvert.SerializeObject(new
+                {
+                    tipo = dataset.MQTT_ACTUADOR,
+                    valor = entryGet.Temperature
+                });
+
                 var message = new MqttApplicationMessageBuilder()
-                    .WithTopic(dataset.MQTT_TOPIC_SUB)
-                    .WithPayload(dataget.Temperature)
+                    .WithTopic(dataset.MQTT_TOPIC_PUB)
+                    .WithPayload(objectSerialized)
                     .WithAtLeastOnceQoS()
                     .Build();
 

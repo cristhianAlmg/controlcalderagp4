@@ -53,6 +53,27 @@
         <h4 class="mb-2 mt-2">Subscribe Info</h4>
 
         <div class="container text-center">
+            <div class="card">
+                <div class="card-header">
+                    Subscribe
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Data Current</h5>
+                    <div class="row">
+                        <div class="col m-1">
+                            <span class="input-group-text" id="inputGroup-sizing-default">Temperature Current = @entryGet.Temperature</span>
+                        </div>
+                        <div class="col m-1">
+                            <span class="input-group-text" id="inputGroup-sizing-default">Temperature Current = @entryGet.Temperature</span>
+                        </div>
+                        <div class="col m-1">
+                            <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                <button type="button" class="btn btn-outline-success" @onclick="@Subscribe">Actualizar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-2">
@@ -60,53 +81,57 @@
                         <input @bind="entryGet.Temperature" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" disabled>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="input-group mb-2">
-                        <span class="input-group-text" id="inputGroup-sizing-default">New Temperature</span>
-                        <input @bind="entryGet.Temperature" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                <div class="col mb-2 mt-2">
+                    <div class="btn-group" role="group" aria-label="Basic outlined example">
+                        <button type="button" class="btn btn-outline-success" @onclick="@Subscribe">Subscribe</button>
                     </div>
                 </div>
             </div>
-            <div class="row mb-2 mt-2">
-                <div class="btn-group" role="group" aria-label="Basic outlined example">
-                    <button type="button" class="btn btn-outline-success" @onclick="@Publish">Publish</button>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text" id="inputGroup-sizing-default">New Temperature</span>
+                        <input @bind="entrySend.Temperature" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                    </div>
+                </div>
+                <div class="col mb-2 mt-2">
+                    <div class="btn-group" role="group" aria-label="Basic outlined example">
+                        <button type="button" class="btn btn-outline-success" @onclick="@Publish">Publish</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 }
 
-
 @code {
-    private System.Threading.Timer? timer;
-
     DataSet entrySet = new()
     {
-            MQTT_CLIENT_ID = "grupo4",
+            MQTT_CLIENT_ID = "app_g4",
             MQTT_BROKER = "lrfia.uai.edu.ar",
             MQTT_PORT = 8741,
             MQTT_USER = "alumnos",
             MQTT_PASSWORD = "",
-            MQTT_TOPIC_PUB = "grupo4/topic_sub",
-            MQTT_TOPIC_SUB = "grupo4/topic_pub",
+            MQTT_TOPIC_PUB = "grupo4/topic_pub",
+            MQTT_TOPIC_SUB = "grupo4/topic_sub",
             MQTT_SENSOR = "sensor_1",
-            MQTT_ACTUADOR = "actuador_1",
-            MQTT_STATUS = "actuador_2"
+            MQTT_ACTUADOR = "caldera_1",
+            MQTT_STATUS = "caldera_2"
     };
 
-    DataGet entryGet = new DataGet();
+    DataGet entryGet = new();
+
+    DataGet entrySend = new();
 
     bool conectedServer = true;
 
     protected override async Task OnInitializedAsync()
     {
-        Subscribe();
+        entryGet = await mqttService.Subscribe_Topic(entrySet);
     }
 
-    // private async Task<bool> Connection() => (mqttService.ConnectClient(entrySet) != null) ? true : false;
+    private async void Publish() => await mqttService.Publish_Application_Message(entrySet, entrySend);
 
     private async void Subscribe() => entryGet = await mqttService.Subscribe_Topic(entrySet);
-
-    private async void Publish() => await mqttService.Publish_Application_Message(entrySet, entryGet);
 
 }
