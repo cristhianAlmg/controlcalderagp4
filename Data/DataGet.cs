@@ -2,7 +2,9 @@
 {
     public class DataGet
     {
-        public string Temperature { get; set; }
-        public string Time { get; set; }
+        public string Target { get; set; }
+        public string Temperatura { get; set; }
+        public string Estado { get; set; }
+        public string Tipo { get; set; }
     }
 }

@@ -1,9 +1,7 @@
 ﻿@page "/"
 @page "/dashboard"
 @using BlazorApp1.Data
-@inject BlazorApp1.Services.SetService setService
 @inject BlazorApp1.Services.MqttService mqttService
-@inject BlazorApp1.Services.GetService getService
 
 <div class="container">
     <div class="container text-center">
@@ -44,59 +42,70 @@
                 </div>
             }
         </div>
-     </div>
+    </div>
 </div>
 
 @if (conectedServer)
 {
     <div class="container">
-        <h4 class="mb-2 mt-2">Subscribe Info</h4>
-
-        <div class="container text-center">
-            <div class="card">
-                <div class="card-header">
-                    Subscribe
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Data Current</h5>
+        <div class="card mb-1">
+            <div class="card-header"> Data Sensor </div>
+            <div class="card-body">
+                <div class="container text-center">
                     <div class="row">
                         <div class="col m-1">
-                            <span class="input-group-text" id="inputGroup-sizing-default">Temperature Current = @entryGet.Temperature</span>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="inputGroup-sizing-sm">Target</span>
+                                <input @bind="entryGet.Target" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" disabled>
+                            </div>
                         </div>
                         <div class="col m-1">
-                            <span class="input-group-text" id="inputGroup-sizing-default">Temperature Current = @entryGet.Temperature</span>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="inputGroup-sizing-sm">Temperature</span>
+                                <input @bind="entryGet.Temperatura" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" disabled>
+                            </div>
                         </div>
                         <div class="col m-1">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="inputGroup-sizing-sm">Status</span>
+                                <input @bind="entryGet.Estado" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" disabled>
+                            </div>
+                        </div>
+                        <div class="col m-1">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="inputGroup-sizing-sm">Type</span>
+                                <input @bind="entryGet.Tipo" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-2 mt-2">
                             <div class="btn-group" role="group" aria-label="Basic outlined example">
-                                <button type="button" class="btn btn-outline-success" @onclick="@Subscribe">Actualizar</button>
+                                <button type="button" class="btn btn-outline-success" @onclick="@Subscribe">Refresh</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-2">
-                        <span class="input-group-text" id="inputGroup-sizing-default">Temperature Current</span>
-                        <input @bind="entryGet.Temperature" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" disabled>
+        </div>
+        <div class="card mt-1">
+            <div class="card-header"> Publish </div>
+            <div class="card-body">
+                <div class="container text-center">
+                    <div class="row">
+                        <div class="col m-1">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text" id="inputGroup-sizing-sm">New Temperature</span>
+                                <input @bind="entrySend.Temperatura" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="col mb-2 mt-2">
-                    <div class="btn-group" role="group" aria-label="Basic outlined example">
-                        <button type="button" class="btn btn-outline-success" @onclick="@Subscribe">Subscribe</button>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-2">
-                        <span class="input-group-text" id="inputGroup-sizing-default">New Temperature</span>
-                        <input @bind="entrySend.Temperature" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
-                    </div>
-                </div>
-                <div class="col mb-2 mt-2">
-                    <div class="btn-group" role="group" aria-label="Basic outlined example">
-                        <button type="button" class="btn btn-outline-success" @onclick="@Publish">Publish</button>
+                    <div class="row">
+                        <div class="col mb-2 mt-2">
+                            <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                <button type="button" class="btn btn-outline-success" @onclick="@Publish">Publish</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -106,7 +115,7 @@
 
 @code {
     DataSet entrySet = new()
-    {
+        {
             MQTT_CLIENT_ID = "app_g4",
             MQTT_BROKER = "lrfia.uai.edu.ar",
             MQTT_PORT = 8741,
@@ -117,7 +126,7 @@
             MQTT_SENSOR = "sensor_1",
             MQTT_ACTUADOR = "caldera_1",
             MQTT_STATUS = "caldera_2"
-    };
+        };
 
     DataGet entryGet = new();
 

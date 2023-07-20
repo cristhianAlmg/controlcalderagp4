@@ -15,6 +15,7 @@ namespace BlazorApp1.Services
     public class MqttService
     {
         DataGet dataGet = new();
+        string? result;
 
         public async Task<DataGet> Subscribe_Topic(DataSet dataset)
         {
@@ -43,16 +44,16 @@ namespace BlazorApp1.Services
 
                 client.UseDisconnectedHandler(args => { });
 
-                Console.WriteLine("Connected to the broker successfully");
                 client.UseApplicationMessageReceivedHandler(args =>
                 {
-                    dataGet.Temperature = Encoding.UTF8.GetString(args.ApplicationMessage.Payload);
+                    Console.WriteLine("Connected to the broker successfully");
+                    result = Encoding.UTF8.GetString(args.ApplicationMessage.Payload);
                     Console.WriteLine($"Received Message - {Encoding.UTF8.GetString(args.ApplicationMessage.Payload)}");
                 });
 
-                await client.ConnectAsync(options);
+                dataGet = ValidateResult(result: result);
 
-                //await client.DisconnectAsync();
+                await client.ConnectAsync(options);
 
                 return dataGet;
             }
@@ -60,6 +61,23 @@ namespace BlazorApp1.Services
             {
                 Console.WriteLine(e.Message);
                 throw;
+            }
+        }
+
+        private static DataGet ValidateResult(string? result)
+        {
+            return (!string.IsNullOrEmpty(result)) ? FormatedResult(result) : new DataGet();
+        }
+
+        private static DataGet FormatedResult(string result)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<DataGet>(result);
+            }
+            catch (Exception)
+            {
+                return new DataGet();
             }
         }
 
@@ -84,7 +102,7 @@ namespace BlazorApp1.Services
 
                 await client.ConnectAsync(options);
 
-                if (entryGet.Temperature != null && entryGet.Temperature != "0")
+                if ((!string.IsNullOrEmpty(entryGet.Temperatura)))
                 {
                     await PublishMessageAsync(client, dataset, entryGet);
                 }
@@ -107,7 +125,7 @@ namespace BlazorApp1.Services
                 string objectSerialized = JsonConvert.SerializeObject(new
                 {
                     tipo = dataset.MQTT_ACTUADOR,
-                    valor = entryGet.Temperature
+                    valor = entryGet.Temperatura
                 });
 
                 var message = new MqttApplicationMessageBuilder()
@@ -118,7 +136,9 @@ namespace BlazorApp1.Services
 
                 if (client.IsConnected)
                 {
+                    Console.WriteLine("Connected to the broker successfully");
                     await client.PublishAsync(message);
+                    Console.WriteLine($"Published Message - {objectSerialized}");
                 }
             }
             catch (Exception e)
