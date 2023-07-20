@@ -1,0 +1,96 @@
+﻿@page "/iot"
+@using BlazorApp1.Data
+@inject BlazorApp1.Services.MqttService mqttService
+
+<div class="container">
+    <div class="card mb-1">
+        <div class="card-header"> Data Sensor </div>
+        <div class="card-body">
+            <div class="container text-center">
+                <div class="row">
+                    <div class="col-xs-12 col-md-3">
+                        <div class="input-group input-group-sm m-1">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">Target</span>
+                            <input @bind="entryGet.Target" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" disabled>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-3">
+                        <div class="input-group input-group-sm m-1">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">Temperature</span>
+                            <input @bind="entryGet.Temperatura" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" disabled>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-3">
+                        <div class="input-group input-group-sm m-1">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">Status</span>
+                            <input @bind="entryGet.Estado" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" disabled>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-3">
+                        <div class="input-group input-group-sm m-1">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">Type</span>
+                            <input @bind="entryGet.Tipo" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-2 mt-2">
+                        <div class="btn-group" role="group" aria-label="Basic outlined example">
+                            <button type="button" class="btn btn-outline-success" @onclick="@Subscribe">Refresh</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-1">
+        <div class="card-header"> Publish </div>
+        <div class="card-body">
+            <div class="container text-center">
+                <div class="row">
+                    <div class="col m-1">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">New Temperature</span>
+                            <input @bind="entrySend.Temperatura" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-2 mt-2">
+                        <div class="btn-group" role="group" aria-label="Basic outlined example">
+                            <button type="button" class="btn btn-outline-success" @onclick="@Publish">Publish</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    DataSet entrySet = new()
+        {
+            MQTT_CLIENT_ID = "app_g4",
+            MQTT_BROKER = "lrfia.uai.edu.ar",
+            MQTT_PORT = 8741,
+            MQTT_USER = "alumnos",
+            MQTT_PASSWORD = "",
+            MQTT_TOPIC_PUB = "grupo4/topic_pub",
+            MQTT_TOPIC_SUB = "grupo4/topic_sub",
+            MQTT_SENSOR = "sensor_1",
+            MQTT_ACTUADOR = "caldera_1",
+            MQTT_STATUS = "caldera_2"
+        };
+
+    DataGet entryGet = new();
+    DataGet entrySend = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        entryGet = await mqttService.Subscribe_Topic(entrySet);
+    }
+
+    private async void Subscribe() => entryGet = await mqttService.Subscribe_Topic(entrySet);
+    private async void Publish() => await mqttService.Publish_Application_Message(entrySet, entrySend);
+}

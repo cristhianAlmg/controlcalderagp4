@@ -5,9 +5,6 @@ using DataSet = BlazorApp1.Data.DataSet;
 using MQTTnet.Server;
 using MQTTnet.Client.Options;
 using System.Text;
-using System.Data;
-using MQTTnet.Client.Publishing;
-using System.Text.Json;
 using Newtonsoft.Json;
 
 namespace BlazorApp1.Services
