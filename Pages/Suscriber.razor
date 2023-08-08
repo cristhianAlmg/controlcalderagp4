@@ -1,10 +1,12 @@
 ﻿@page "/iot"
 @using BlazorApp1.Data
 @inject BlazorApp1.Services.MqttService mqttService
+@using System.Timers
+@implements IDisposable
 
 <div class="container">
     <div class="card mb-1">
-        <div class="card-header"> Data Sensor </div>
+        <div class="card-header"> Data Sensor  -  Last Updated: @lastUpdatedSubscribe</div>
         <div class="card-body">
             <div class="container text-center">
                 <div class="row">
@@ -34,7 +36,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col mb-2 mt-2">
+                    <div class="col-12 mb-2 mt-2">
                         <div class="btn-group" role="group" aria-label="Basic outlined example">
                             <button type="button" class="btn btn-outline-success" @onclick="@Subscribe">Refresh</button>
                         </div>
@@ -45,7 +47,7 @@
     </div>
 
     <div class="card mt-1">
-        <div class="card-header"> Publish </div>
+        <div class="card-header"> Publish  -  Last Updated: @lastUpdatedPublish</div>
         <div class="card-body">
             <div class="container text-center">
                 <div class="row">
@@ -82,15 +84,42 @@
             MQTT_ACTUADOR = "caldera_1",
             MQTT_STATUS = "caldera_2"
         };
-
+    private string lastUpdatedSubscribe = "00:00:00";
+    private string lastUpdatedPublish = "00:00:00";
+    private Timer timer = new(1000);
     DataGet entryGet = new();
     DataGet entrySend = new();
 
+    public Suscriber()
+    {
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        timer.Elapsed += (sender, eventArgs) => OnTimerCallback();
+        timer.Start();
+    }
+
+    private async void OnTimerCallback()
+    {
+        _ = InvokeAsync(() =>
+        {
+            Subscribe();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose() => timer.Dispose();
+
+    private async void Subscribe()
+    {
+        lastUpdatedSubscribe = DateTime.Now.ToString("HH:mm:ss");
         entryGet = await mqttService.Subscribe_Topic(entrySet);
     }
 
-    private async void Subscribe() => entryGet = await mqttService.Subscribe_Topic(entrySet);
-    private async void Publish() => await mqttService.Publish_Application_Message(entrySet, entrySend);
+    private async void Publish()
+    {
+        lastUpdatedPublish = DateTime.Now.ToString("HH:mm:ss");
+        await mqttService.Publish_Application_Message(entrySet, entrySend);
+    }
 }
